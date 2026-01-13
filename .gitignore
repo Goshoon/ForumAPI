@@ -1,7 +1,10 @@
 api/venv/
 api/__pycache__/
+thirdparties/
 
+*.o
 *.png
 *.jpg
 *.gif
 *.exe
+howToRun.txt

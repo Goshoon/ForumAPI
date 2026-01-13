@@ -6,10 +6,15 @@ class Thread(Base):
     __tablename__ = "threads"
 
     id = Column("ID", Integer, primary_key=True, index=True)
+    title = Column("TITLE", Text, nullable=False)
     summary = Column("SUMMARY", Text, nullable=False)
     time = Column("TIME", Text, nullable=False)
 
-    posts = relationship("Post", back_populates="thread_obj", cascade="all, delete")
+    posts = relationship(
+        "Post",
+        back_populates="thread_obj",
+        cascade="all, delete"
+    )
 
 
 class Post(Base):
@@ -19,7 +24,7 @@ class Post(Base):
     comment = Column("COMMENT", Text, nullable=False)
     time = Column("TIME", Text, nullable=False)
 
-    thread = Column(
+    thread_id = Column(
         "THREAD",
         Integer,
         ForeignKey("threads.ID"),
