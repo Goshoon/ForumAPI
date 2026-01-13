@@ -1,6 +1,7 @@
 api/venv/
 api/__pycache__/
 thirdparties/
+bin/
 
 *.o
 *.png
