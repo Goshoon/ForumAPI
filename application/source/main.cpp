@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <limits>
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
 
@@ -32,6 +33,7 @@ void get_threads()
 
     json threads = json::parse(response);
 
+    /*
     for (const auto& t : threads)
     {
         std::cout << "ID: " << t["id"] << "\n";
@@ -39,6 +41,7 @@ void get_threads()
         std::cout << "Summary: " << t["summary"] << "\n";
         std::cout << "Time: " << t["time"] << "\n\n";
     }
+    */
 }
 
 void create_thread(const std::string& title, const std::string& summary)
@@ -74,16 +77,49 @@ void create_thread(const std::string& title, const std::string& summary)
     std::cout << "Created thread:\n" << response << "\n";
 }
 
-
 int main() 
 {
-	int x;
+    int view = 0;
+    bool done = false;
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
-    create_thread("Casale", "Hello from C++ terminal app!");
-    get_threads();
+    while(!done)
+    {
+        switch(view)
+        {
+            case 0: // Title
+            {
+                int x;
+                std::cout << "TITLE!\n\n1) View Threads\n2) Create Threads\n3) Exit\n\n";
+                std::cin >> x;
+                if (x == 1) view = 1;
+                if (x == 2) view = 2;
+                if (x == 3) done = true;
+                break;
+            }
+            case 1: // View threads
+            {
+                break;
+            }
+            case 2: // Create thread
+            {
+                std::string title;
+                std::string summary;
+
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+                std::cout << "Enter title: ";
+                std::getline(std::cin, title);
+
+                std::cout << "\nEnter text: ";
+                std::getline(std::cin, summary);
+                create_thread(title, summary);
+                view = 0;
+                break;
+            }
+        }
+    }
 
     curl_global_cleanup();
-    std::cin >> x;
     return 0;
 }
