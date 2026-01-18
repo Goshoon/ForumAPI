@@ -2,8 +2,14 @@ api/venv/
 api/__pycache__/
 thirdparties/
 bin/
+application/.vs/
+application/application/bin/
+application/vcpkg/
+application/x64/
+application/application/x64/
 
 *.o
+*.user
 *.png
 *.jpg
 *.gif

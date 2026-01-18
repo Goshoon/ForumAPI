@@ -5,6 +5,7 @@ setlocal enabledelayedexpansion
 ::windres resources.rc -O coff -o resources.res
 set APPNAME=ForumKK
 set CURL=C:/Dependencies/curl/
+set FTXUI=C:/Dependencies/ftxui/
 
 set "SOURCES="
 set "OBJECTS="
@@ -23,8 +24,13 @@ for /R ./headers /D %%d in (*) do (
 
 :: Compilar todos los archivos a un archivo de objeto
 for %%f in (%SOURCES%) do (
-    g++ -std=c++17 -c %%f -I ./headers/ %INCLUDES% -I %CURL%/include -o %%~nf.o
-     if errorlevel 1 (
+    g++ -std=c++17 -c %%f ^
+        -I "./headers" %INCLUDES% ^
+        -I "%CURL%/include" ^
+        -I "%FTXUI%/include" ^
+        -o %%~nf.o
+
+    if errorlevel 1 (
         echo Error compiling %%f.
         pause
         exit /b 1
@@ -32,12 +38,14 @@ for %%f in (%SOURCES%) do (
 )
 
 :: Conectar todos los archivos al ejecutable
-g++ %OBJECTS% -L %CURL%/lib -o ./bin/%APPNAME%.exe -lcurl
- if errorlevel 1 (
-    echo Linker error compiling %%f.
-    pause
-    exit /b 1
-)
+g++ %OBJECTS% ^
+  -L "%FTXUI%/lib" ^
+  -L "%CURL%/lib" ^
+  -lftxui-dom ^
+  -lftxui-screen ^
+  -lcurl ^
+  -o "./bin/%APPNAME%.exe"
+
 
 pause
 
