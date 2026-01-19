@@ -9,87 +9,267 @@
 
 using namespace ftxui;
 
-enum class View {
-    MainMenu,
-    ViewThreads,
-    CreateThread,
-    ReadThread
-};
-
-void RunApp() {
+void RunApp()
+{
     ScreenInteractive screen = ScreenInteractive::TerminalOutput();
-    View current_view = View::MainMenu;
+    auto spacer = text(" ");
+    int tab_index = 0;
 
-    std::vector<Thread> threads;
+    /* --- Datos --- */
     std::vector<Post> posts;
+    std::vector<Thread> threads;
+    std::vector<std::string> thread_entries;
+    Thread current_thread;
 
-    // ---------- MAIN MENU ----------
-    std::vector<std::string> menu_entries = {
+    std::string title;
+    std::string myParagraph;
+
+    /* --- Input --- */
+    Component title_input = Input(&title, "Title");
+    Component paragraph_input = Input(&myParagraph, "Paragraph");
+
+    /* --- Buttons --- */
+    Component create_thread_button = Button("Create", [&]
+        {
+            if (!title.empty() && !myParagraph.empty())
+            {
+                create_thread(title, myParagraph);
+                title.clear();
+                myParagraph.clear();
+                tab_index = 0;
+            }
+        });
+
+    Component back_from_create_button = Button("Back", [&]
+        {
+            title.clear();
+            myParagraph.clear();
+            tab_index = 0;
+        });
+
+    Component create_post_button = Button("Create", [&]
+    {
+        if (!myParagraph.empty())
+        {
+            bool check = create_post(current_thread, myParagraph);
+            myParagraph.clear();
+            posts = get_posts(current_thread);
+            tab_index = 1;
+            tab_index = 3;
+        }
+    });
+
+    Component back_from_post_button = Button("Back", [&]
+    {
+        myParagraph.clear();
+        tab_index = 3;
+    });
+
+    /* --- Main menu --- */
+    std::vector<std::string> main_menu_entries =
+    {
         "View Threads",
         "Create Thread",
         "Exit"
     };
-    int menu_selected = 0;
-    Component menu = Menu(&menu_entries, &menu_selected);
 
-    menu |= CatchEvent([&](Event e) {
-        if (e == Event::Return) {
-            if (menu_selected == 0)
+    int main_menu_selected = 0;
+    Component main_menu = Menu(&main_menu_entries, &main_menu_selected);
+
+    main_menu |= CatchEvent([&](Event e)
+    {
+        if (tab_index != 0)
+            return false;
+
+        if (e == Event::Return)
+        {
+            if (main_menu_selected == 0)
             {
                 threads = get_threads();
-                current_view = View::ViewThreads;
+                thread_entries.clear();
+                for (auto& t : threads)
+                    thread_entries.push_back(t.title);
+                thread_entries.push_back("go back");
+                tab_index = 1;
             }
-            if (menu_selected == 1) 
+            if (main_menu_selected == 1)
             {
-                current_view = View::CreateThread;
+                tab_index = 2;
             }
-            if (menu_selected == 2) {
+            if (main_menu_selected == 2)
+            {
                 screen.Exit();
             }
             return true;
         }
         return false;
-        });
-
-    // Root Renderer
-    Component app = Renderer(menu, [&] 
-    {
-        switch (current_view) {
-        case View::MainMenu:
-            return vbox({
-                text("Forum [ Frodo ]") | bold | center,
-                separator(),
-                menu->Render(),
-                }) | border;
-
-        case View::ViewThreads:
-            return vbox({
-                text("Threads") | bold,
-                separator(),
-                text("Threads loaded: " + std::to_string(threads.size())),
-                separator(),
-                text("Press ESC to go back"),
-                }) | border;
-
-        case View::CreateThread:
-            return vbox({
-                text("Create Thread") | bold,
-                separator(),
-                text("TODO: Thread creation UI"),
-                separator(),
-                text("Press ESC to go back"),
-                }) | border;
-
-        default:
-            return text("Unknown view");
-        }
     });
 
-    app |= CatchEvent([&](Event e) 
+    /* --- Thread view --- */
+    int thread_selected = 0;
+    Component threads_menu = Menu(&thread_entries, &thread_selected);
+
+    Component threads_view = Container::Vertical(
+    {
+        threads_menu
+    });
+
+    threads_view |= CatchEvent([&](Event e)
+    {
+        if (tab_index != 1)
+            return false;
+
+        if (e == Event::Return)
+        {
+            if (thread_entries.size() <= 1)
+            {
+                tab_index = 0;
+            }
+            else
+            {
+                if (thread_selected == thread_entries.size() - 1) // go back
+                {
+                    tab_index = 0;
+                }
+                else // Pick a thread to read
+                {
+                    current_thread = threads.at(thread_selected);
+                    posts = get_posts(current_thread);
+                    tab_index = 3;
+                }
+            }
+            return true;
+        }
+        return false;
+    });
+
+    /* --- Create thread view --- */
+    Component create_thread_view = Container::Vertical(
+    {
+        title_input,
+        paragraph_input,
+        create_thread_button,
+        back_from_create_button
+    });
+
+    /* --- Read posts from thread view --- */
+    Component posts_view = Container::Vertical(
+    {
+        Button("Reply", [&] { tab_index = 4; }),
+        Button("Back",  [&] { tab_index = 1; })
+    });
+
+    /* --- Create posts view --- */
+    Component create_post_view = Container::Vertical(
+    {
+        paragraph_input,
+        create_post_button,
+        back_from_post_button
+    });
+
+    /* -- Tabs --- */
+    Component tabs = Container::Tab(
+    {
+        main_menu,
+        threads_view,
+        create_thread_view,
+        posts_view,
+        create_post_view
+    }, &tab_index);
+
+    /* --- Renderer for all views --- */
+    Component app = Renderer(tabs, [&]
+    {
+        if (tab_index == 0)
+        {
+            return vbox(
+            {
+                spacer,
+                text("Frodo-chan") | bold | center | color(Color::Aquamarine1),
+                spacer,
+                main_menu->Render(),
+                filler()
+            });
+        }
+        if (tab_index == 1)
+        {
+            return vbox(
+            {
+                spacer,
+                text("Threads") | bold | center | color(Color::Aquamarine1),
+                spacer,
+                threads_menu->Render(),
+            });
+        }
+
+        if (tab_index == 2)
+        {
+            return vbox(
+            {
+                spacer,
+                text("Create Thread") | bold | center | color(Color::Aquamarine1),
+                spacer,
+                title_input->Render(),
+                paragraph_input->Render(),
+                create_thread_button->Render(),
+                back_from_create_button->Render(),
+                filler()
+            });
+        }
+
+        if (tab_index == 3)
+        {
+            std::string outputText = current_thread.title + " #" + std::to_string(current_thread.id);
+            Elements shown_posts;
+            for (auto& p : posts)
+            {
+                shown_posts.push_back(
+                    vbox({
+                        text("#" + std::to_string(p.id)) | center,
+                        text(p.text)
+                        })
+                );
+            }
+
+            return vbox(
+            {
+                spacer,
+                text(outputText) | bold | center | color(Color::Aquamarine1) | blink,
+                spacer,
+                paragraph(current_thread.summary) | center | color(Color::White),
+                spacer,
+                vbox(shown_posts) | vscroll_indicator | frame | flex,
+                spacer,
+                posts_view->Render(),
+                filler(),
+            });
+        }
+
+        if (tab_index == 4)
+        {
+            return vbox(
+            {
+                filler(),
+                text("Reply thread") | bold | center | color(Color::Red),
+                text(" "),
+                paragraph_input->Render(),
+                create_post_button->Render() | center,
+                back_from_post_button->Render() | center,
+                filler()
+            });
+        }
+
+        return text("");
+    });
+
+    /* --- Global events --- */
+    app |= CatchEvent([&](Event e)
     {
         if (e == Event::Escape)
         {
-            current_view = View::MainMenu;
+            title.clear();
+            myParagraph.clear();
+            tab_index = 0;
             return true;
         }
         return false;

@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, Text, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
 
+
 class Thread(Base):
     __tablename__ = "threads"
 
@@ -13,7 +14,7 @@ class Thread(Base):
     posts = relationship(
         "Post",
         back_populates="thread_obj",
-        cascade="all, delete"
+        cascade="all, delete-orphan"
     )
 
 
@@ -31,4 +32,7 @@ class Post(Base):
         nullable=False
     )
 
-    thread_obj = relationship("Thread", back_populates="posts")
+    thread_obj = relationship(
+        "Thread",
+        back_populates="posts"
+    )
