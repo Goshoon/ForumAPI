@@ -35,8 +35,9 @@ std::vector<Thread> get_threads()
         result.push_back({
             t["id"],
             t["title"],
-            t["summary"]
-            });
+            t["summary"],
+            format_time(t["time"])
+        });
     }
 
     return result;
@@ -49,7 +50,7 @@ bool create_thread(const std::string& title, const std::string& summary)
 
     json payload = {
         {"title", title},
-        {"summary", summary}
+        {"summary", summary},
     };
 
     std::string data = payload.dump();

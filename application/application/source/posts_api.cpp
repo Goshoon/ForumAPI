@@ -1,6 +1,6 @@
 #define NOMINMAX
 #include "api/posts_api.hpp"
-#include "api/threads_api.hpp"
+#include "models/thread.hpp"
 
 using json = nlohmann::json;
 
@@ -40,8 +40,8 @@ std::vector<Post> get_posts(Thread& current_thread)
         result.push_back({
             p["id"],
             p["comment"],
-            p["time"]
-            });
+            format_time(p["time"])
+        });
     }
 
     return result;

@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include "models/thread.hpp"
+#include "parse.hpp"
 
 std::vector<Thread> get_threads();
 bool create_thread(const std::string& title, const std::string& summary);

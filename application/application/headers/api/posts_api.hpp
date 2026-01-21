@@ -6,6 +6,7 @@
 #include <iostream>
 #include "models/thread.hpp"
 #include "models/post.hpp"
+#include "parse.hpp"
 
 std::vector<Post> get_posts(Thread& current_thread);
 bool create_post(Thread& current_thread, const std::string& comment);

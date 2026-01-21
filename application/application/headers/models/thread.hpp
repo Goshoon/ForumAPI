@@ -6,4 +6,5 @@ struct Thread
     int id;
     std::string title;
     std::string summary;
+    std::string time;
 };

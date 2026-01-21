@@ -137,6 +137,7 @@
   <ItemGroup>
     <ClCompile Include="source\app.cpp" />
     <ClCompile Include="source\main.cpp" />
+    <ClCompile Include="source\parse.cpp" />
     <ClCompile Include="source\posts_api.cpp" />
     <ClCompile Include="source\threads.api.cpp" />
   </ItemGroup>
@@ -145,6 +146,7 @@
     <ClInclude Include="headers\api\threads_api.hpp" />
     <ClInclude Include="headers\models\post.hpp" />
     <ClInclude Include="headers\models\thread.hpp" />
+    <ClInclude Include="headers\parse.hpp" />
     <ClInclude Include="headers\third_party\nlohmann\json.hpp" />
     <ClInclude Include="headers\third_party\nlohmann\json_fwd.hpp" />
     <ClInclude Include="headers\ui\app.hpp" />
